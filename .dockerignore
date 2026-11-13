@@ -1,0 +1,6 @@
+.git
+**/__pycache__
+.pytest_cache
+web/node_modules
+web/dist
+app/live

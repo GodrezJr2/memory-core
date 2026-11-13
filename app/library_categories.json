@@ -1,0 +1,122 @@
+{
+  "about": "Example library categories. Each category's 'description' is what new items are matched against (by meaning, no LLM); 'guide' tells an agent how to choose inside the shelf. 'skills' and 'repos' pin known skill titles and starred repos to a shelf; anything not listed is filed automatically and flagged as auto. 'hidden' lists duplicate or legacy skills to keep out of search. Edit freely, deploy, then POST /api/v1/library/categories/apply.",
+  "categories": [
+    {
+      "name": "web-design",
+      "title": "Web design and UI",
+      "description": "Designing websites, landing pages, dashboards and app interfaces: visual direction, layout, typography, color, design systems, UI components, redesigns and design audits.",
+      "guide": "Search this shelf with library_search(category='web-design'); prefer the item whose description names your exact task, and open it with library_get."
+    },
+    {
+      "name": "stitch",
+      "title": "Google Stitch workflow",
+      "description": "Google Stitch design tool: generating screens, DESIGN.md design systems, converting Stitch designs to React, React Native or Vite dashboards, and uploading assets to Stitch.",
+      "guide": "Search this shelf with library_search(category='stitch'); prefer the item whose description names your exact task, and open it with library_get."
+    },
+    {
+      "name": "motion",
+      "title": "Animation and scroll effects",
+      "description": "Web animation and motion: GSAP, ScrollTrigger, Framer Motion, anime.js, Lottie, page transitions, smooth scrolling, parallax and scroll-driven storytelling.",
+      "guide": "Search this shelf with library_search(category='motion'); prefer the item whose description names your exact task, and open it with library_get."
+    },
+    {
+      "name": "3d-web",
+      "title": "3D and WebGL",
+      "description": "3D on the web: Three.js, React Three Fiber, WebGL shaders, lighting, materials, models, post-processing and lightweight 3D effects.",
+      "guide": "Search this shelf with library_search(category='3d-web'); prefer the item whose description names your exact task, and open it with library_get."
+    },
+    {
+      "name": "visual-assets",
+      "title": "Images, brand and banners",
+      "description": "Generating images and brand visuals: AI image generation, brand kits, logos, identity boards, banners and design reference images for web or mobile.",
+      "guide": "Search this shelf with library_search(category='visual-assets'); prefer the item whose description names your exact task, and open it with library_get."
+    },
+    {
+      "name": "documents",
+      "title": "Documents, slides and office files",
+      "description": "Office and document files: Word docx, PowerPoint pptx, Excel xlsx spreadsheets, PDF reading and creation, slide decks, shared docs and Google Workspace files.",
+      "guide": "Search this shelf with library_search(category='documents'); prefer the item whose description names your exact task, and open it with library_get."
+    },
+    {
+      "name": "planning",
+      "title": "Planning, specs and design thinking",
+      "description": "Thinking before coding: brainstorming, interviews that stress-test a plan, specs, tickets, implementation plans, domain models, module and interface design, refactor plans and prototypes.",
+      "guide": "Search this shelf with library_search(category='planning'); prefer the item whose description names your exact task, and open it with library_get."
+    },
+    {
+      "name": "build",
+      "title": "Implementing and delegating",
+      "description": "Executing implementation work: following a plan or tickets, splitting work across subagents, delegating steps to cheaper or local models, and generating interactive tools or scaffolds.",
+      "guide": "Search this shelf with library_search(category='build'); prefer the item whose description names your exact task, and open it with library_get."
+    },
+    {
+      "name": "testing-debugging",
+      "title": "Testing and debugging",
+      "description": "Finding and fixing bugs and proving work is done: test-driven development, systematic debugging, diagnosing regressions, QA sessions and verification before claiming completion.",
+      "guide": "Search this shelf with library_search(category='testing-debugging'); prefer the item whose description names your exact task, and open it with library_get."
+    },
+    {
+      "name": "review-git",
+      "title": "Code review and git",
+      "description": "Code review and version control: reviewing changes, receiving review feedback, triaging issues and PRs, branches, worktrees, merge conflicts, commit messages and git safety hooks.",
+      "guide": "Search this shelf with library_search(category='review-git'); prefer the item whose description names your exact task, and open it with library_get."
+    },
+    {
+      "name": "agents",
+      "title": "Agents, skills and memory",
+      "description": "Working with AI agents themselves: creating and improving skills and plugins, installing skills, handing work to another agent, saving session state, importing memory and maintaining CLAUDE.md files.",
+      "guide": "Search this shelf with library_search(category='agents'); prefer the item whose description names your exact task, and open it with library_get."
+    },
+    {
+      "name": "browser-computer",
+      "title": "Browser and computer control",
+      "description": "Operating a browser or desktop: Claude in Chrome with the user's own sign-ins, the built-in browser pane, and computer use with screenshots, clicks and typing.",
+      "guide": "Search this shelf with library_search(category='browser-computer'); prefer the item whose description names your exact task, and open it with library_get."
+    },
+    {
+      "name": "research",
+      "title": "Research and knowledge",
+      "description": "Researching and organizing knowledge: multi-source research reports, primary-source research notes, knowledge graphs, product documentation lookups and teaching concepts.",
+      "guide": "Search this shelf with library_search(category='research'); prefer the item whose description names your exact task, and open it with library_get."
+    },
+    {
+      "name": "writing",
+      "title": "Writing and editing",
+      "description": "Writing prose: articles, editing for clarity and structure, collecting raw fragments, shaping beats and paragraphs.",
+      "guide": "Search this shelf with library_search(category='writing'); prefer the item whose description names your exact task, and open it with library_get."
+    },
+    {
+      "name": "output-style",
+      "title": "Output style and token saving",
+      "description": "How the agent writes its replies and saves tokens: terse caveman mode, compressing memory files, token usage statistics and forcing complete untruncated output.",
+      "guide": "Search this shelf with library_search(category='output-style'); prefer the item whose description names your exact task, and open it with library_get."
+    },
+    {
+      "name": "reverse-engineering",
+      "title": "Reverse engineering and security",
+      "description": "Reverse engineering shipped software: native binaries, Electron and JavaScript apps, Android APKs, .NET assemblies, firmware, private APIs and network captures; decompiling, tracing behavior, security analysis and CTF challenges.",
+      "guide": "Search this shelf with library_search(category='reverse-engineering'); prefer the item whose description names your exact task, and open it with library_get."
+    },
+    {
+      "name": "other",
+      "title": "Other",
+      "description": "Personal routines and anything that fits no other category, such as a morning brief.",
+      "guide": "Search this shelf with library_search(category='other'); prefer the item whose description names your exact task, and open it with library_get."
+    },
+    {
+      "name": "project-docs",
+      "title": "Project docs",
+      "description": "README, CLAUDE.md, AGENTS.md, HANDOVER, ARCHITECTURE and DESIGN files of the user's own projects.",
+      "guide": "Search this shelf with library_search(category='project-docs'); prefer the item whose description names your exact task, and open it with library_get."
+    }
+  ],
+  "skills": {
+    "frontend-design": "web-design",
+    "webapp-testing": "testing-debugging",
+    "pdf": "documents"
+  },
+  "repos": {
+    "anthropics/skills": "agents"
+  },
+  "hidden": []
+}

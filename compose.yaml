@@ -1,0 +1,65 @@
+# memory-core on homeserver. Data lives on the SATA SSD, away from the boot NVMe.
+# Every port binds to 127.0.0.1; reach the service through Tailscale serve or Caddy.
+name: memory-core
+
+services:
+  postgres:
+    image: pgvector/pgvector:pg17
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: memory
+      POSTGRES_DB: memory
+      POSTGRES_PASSWORD_FILE: /run/secrets/pg_password
+    secrets: [pg_password]
+    volumes:
+      - ./data/pgdata:/var/lib/postgresql/data
+    ports: ["127.0.0.1:5433:5432"]
+    command: ["postgres", "-c", "shared_buffers=128MB", "-c", "work_mem=16MB", "-c", "max_connections=30"]
+    shm_size: 128mb
+    mem_limit: 512m
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U memory -d memory"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  embedder:
+    image: ghcr.io/ggml-org/llama.cpp:server
+    restart: unless-stopped
+    volumes:
+      - ./models:/models:ro
+    # One slot with a 2048-token context keeps the KV cache small; facts and chunks are far shorter.
+    command: ["-m", "/models/Qwen3-Embedding-0.6B-Q8_0.gguf", "--embedding", "--pooling", "last",
+              "-c", "2048", "-b", "2048", "-ub", "2048", "-np", "1", "-t", "4",
+              "--host", "0.0.0.0", "--port", "8421"]
+    ports: ["127.0.0.1:8421:8421"]
+    mem_limit: 1536m  # ~400 MiB real + ~600 MiB mapped model; a tighter cap evicts the model to disk
+    healthcheck:
+      test: ["CMD", "curl", "-fs", "http://127.0.0.1:8421/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 20
+
+  app:
+    build: .
+    image: memory-core:local
+    restart: unless-stopped
+    environment:
+      TOKENS_FILE: /data/tokens.json
+      MEDIA_DIR: /data/media            # images of saved references
+      BUNDLE_DIR: /data/bundles         # skill folders as zips (app/bundles.py)
+      LIVE_VIEWERS: you@github   # Tailscale logins that may open /live
+    secrets: [pg_password]
+    volumes:
+      - ./data/tokens.json:/data/tokens.json:ro
+      - ./data/media:/data/media   # owned by uid 65534 (the app user)
+      - ./data/bundles:/data/bundles   # owned by uid 65534 too
+    ports: ["127.0.0.1:8420:8420"]
+    mem_limit: 384m
+    depends_on:
+      postgres: {condition: service_healthy}
+      embedder: {condition: service_healthy}
+
+secrets:
+  pg_password:
+    file: ./data/pg_password

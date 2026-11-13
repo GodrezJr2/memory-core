@@ -1,0 +1,11 @@
+__pycache__/
+.pytest_cache/
+*.pyc
+tokens.json
+.smoke_token
+pg_password
+app/live/
+data/
+models/
+.ruff_cache/
+backups/

@@ -1,0 +1,36 @@
+{
+  "about": "Branches of the user's memory: each project scope belongs to one domain, by the first pattern (fnmatch) that matches it. Recall and timeline take scope='domain:<name>' to search one branch; the profile groups projects by domain. A scope no pattern matches is in 'other'. Classified by Claude on 8 Oct 2026; edit freely, then redeploy.",
+  "domains": [
+    {
+      "name": "study",
+      "title": "Study",
+      "description": "Coursework: course projects and assignments, group work, presentations, the e-learning portal and its automation.",
+      "scopes": ["project:course-*", "project:lms-automation", "project:course-film", "project:uni-*", "project:study-*"]
+    },
+    {
+      "name": "work",
+      "title": "Work",
+      "description": "Internship and job search, CV, portfolio site, interview preparation and career direction.",
+      "scopes": ["project:job-hunt", "project:cv*", "project:portfolio*", "project:interview*", "project:career*"]
+    },
+    {
+      "name": "projects",
+      "title": "Side projects",
+      "description": "The user's own software projects: reverse engineering, finance and stock tools, games, LLM routing and agent experiments.",
+      "scopes": ["project:car-api", "project:stocktracker", "project:bank-categorizer", "project:browser-game",
+                 "project:routebench", "project:agent-to-agent", "project:9router*", "project:forge*"]
+    },
+    {
+      "name": "infra",
+      "title": "Infra and agent tooling",
+      "description": "The home server, shared agent memory, laptop tooling and self-hosted services the agents run on.",
+      "scopes": ["project:homeserver", "project:memory-core", "project:opensense", "project:opendesign", "project:thread-app"]
+    },
+    {
+      "name": "personal",
+      "title": "Personal",
+      "description": "Life outside study and work: travel plans, games and sim racing, devices and personal PC issues.",
+      "scopes": ["project:trip-*", "project:racing-setups", "project:dashcam-*", "project:antivirus-check"]
+    }
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "about": "Upstream repos of the skills installed on the user's machines (found 8 Oct 2026). scripts/skill_updates.py downloads each repo's default branch and compares every library skill bundle with the upstream skill of the same name. Add a repo here when a new skill comes from one.",
+  "repos": [
+    "Leonxlnx/taste-skill",
+    "mattpocock/skills",
+    "pbakaus/impeccable",
+    "Nutlope/hallmark",
+    "nateherkai/scroll-craft",
+    "alchaincyf/huashu-design",
+    "nextlevelbuilder/ui-ux-pro-max-skill",
+    "greensock/gsap-skills",
+    "google-labs-code/stitch-skills",
+    "vercel-labs/agent-skills",
+    "CloudAI-X/threejs-skills",
+    "freshtechbro/claudedesignskills",
+    "LottieFiles/motion-design-skill",
+    "morluto/rea"
+  ],
+  "skip_titles": {
+    "graphify": "installed by its pip package (graphifyy); update with pip install -U graphifyy && graphify install"
+  },
+  "skip_paths": ["/skills/synced/", "/plugins/cache/", "/.codex/skills/.system/"],
+  "ignore_files": [".mc-pulled.json", ".graphify_version", "LICENSE", "LICENSE.txt", "LICENSE.md"]
+}

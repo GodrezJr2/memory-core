@@ -1,0 +1,9 @@
+{
+  "about": "Example of the recall eval format used by scripts/eval_recall.py. Each question is phrased the way you would really ask it (not copied from the memory text) and lists the memory ids that answer it; any one counts as a hit. The real set refers to private memories and is not published. Write your own against your live memories and add a question whenever recall misses something it should have found.",
+  "questions": [
+    {"q": "which port does the expense tracker backend run on?", "expect": [32]},
+    {"q": "kenapa server sering freeze sendiri?", "expect": [20, 48]},
+    {"q": "How do I give a new agent access to memory-core?", "expect": [28]},
+    {"q": "where are the database backups kept and for how long", "expect": [61]}
+  ]
+}

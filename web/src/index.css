@@ -1,0 +1,119 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Semantic colors. Every surface, line and signal reads from these, so switching theme is one class. */
+:root {
+  --bg: #fafafa;
+  --surface: #ffffff;
+  --surface-2: #f4f4f5;
+  --line: #e4e4e7;
+  --line-strong: #d4d4d8;
+  --grid: rgba(9, 9, 11, 0.055);
+  --ink: #09090b;
+  --ink-2: #3f3f46;
+  --ink-3: #71717a;
+  --recall: #0d9488;
+  --remember: #d97706;
+  --forget: #e11d48;
+  --context: #2563eb;
+  --library: #7c3aed;
+  --error: #dc2626;
+  /* Brain view: one hue per branch of memory (app/domains.json); 'core' is the core (global and agent notes) */
+  --b-core: #18181b;
+  --b-study: #2563eb;
+  --b-work: #db2777;
+  --b-projects: #65a30d;
+  --b-infra: #0d9488;
+  --b-personal: #d97706;
+  --b-other: #71717a;
+  /* spare hues for branches added later (accepted proposals), handed out in order by brain.ts */
+  --b-x1: #7c3aed;
+  --b-x2: #0891b2;
+  --b-x3: #c2410c;
+  --b-x4: #4f46e5;
+  --ease-ios: cubic-bezier(0.16, 1, 0.3, 1);
+  color-scheme: light;
+}
+
+.dark {
+  --bg: #09090b;
+  --surface: #0c0c0f;
+  --surface-2: #141417;
+  --line: #1f1f23;
+  --line-strong: #303036;
+  --grid: rgba(250, 250, 250, 0.04);
+  --ink: #fafafa;
+  --ink-2: #d4d4d8;
+  --ink-3: #7c7c85;
+  --recall: #2dd4bf;
+  --remember: #fbbf24;
+  --forget: #fb7185;
+  --context: #60a5fa;
+  --library: #a78bfa;
+  --error: #f87171;
+  --b-core: #f4f4f5;
+  --b-study: #60a5fa;
+  --b-work: #f472b6;
+  --b-projects: #a3e635;
+  --b-infra: #2dd4bf;
+  --b-personal: #fbbf24;
+  --b-other: #a1a1aa;
+  --b-x1: #a78bfa;
+  --b-x2: #22d3ee;
+  --b-x3: #fb923c;
+  --b-x4: #818cf8;
+  color-scheme: dark;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-grid: var(--grid);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-ink-3: var(--ink-3);
+  --color-recall: var(--recall);
+  --color-remember: var(--remember);
+  --color-forget: var(--forget);
+  --color-context: var(--context);
+  --color-library: var(--library);
+  --color-error: var(--error);
+  --font-sans: "Inter Variable", "SF Pro Text", -apple-system, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono Variable", "SF Mono", ui-monospace, Menlo, Consolas, monospace;
+}
+
+html,
+body {
+  background: var(--bg);
+  color: var(--ink);
+}
+
+body {
+  font-family: var(--font-sans);
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+::selection {
+  background: var(--ink);
+  color: var(--bg);
+}
+
+/* Theme switch: for a moment every color property eases, so the whole palette morphs as one. */
+html.theme-morph,
+html.theme-morph *,
+html.theme-morph *::before,
+html.theme-morph *::after {
+  transition:
+    background-color 700ms var(--ease-ios),
+    border-color 700ms var(--ease-ios),
+    color 700ms var(--ease-ios),
+    fill 700ms var(--ease-ios),
+    stroke 700ms var(--ease-ios),
+    box-shadow 700ms var(--ease-ios) !important;
+}
