@@ -170,7 +170,8 @@ flowchart LR
 - **One ASGI app** (`app/server.py`, Starlette + the MCP SDK) serves MCP, REST and the live page.
 - **No LLM on the server.** Writing a good fact needs a model, and the agent already has one. The server only
   embeds, ranks and stores.
-- **CPU only.** The embedder runs at about 230 tokens/s on an i3, so there is deliberately no reranker.
+- **CPU only.** The embedder runs at about 230 tokens/s on an i3. A local cross-encoder was measured on
+  18 Nov 2026 and made ordering worse, so there is no reranker (see below).
 
 ## Recall quality
 
@@ -185,6 +186,14 @@ This beat the reciprocal-rank fusion used before (hit@1 0.50), which had decayed
 common-word keyword matches crowded the keyword list. That set refers to private memories, so the repo ships only
 an example of the format (`tests/eval/recall_questions.json`). The agent that knew the memories wrote the questions,
 so treat the numbers as a regression check, not a benchmark.
+
+Every answer sits in the top 20 (hit@20 1.0), so retrieval does not miss and only the order is weak. That invites a
+reranker, which is why one was measured rather than assumed: `scripts/eval_rerank.py` re-scores the top 20 with
+`ms-marco-MiniLM-L-6-v2` (quantised ONNX, CPU, so no memory text leaves the machine). It made things worse —
+hit@1 0.588 against 0.657, MRR 0.706 against 0.775, +209 ms median — fixing 10 questions and breaking 17. An
+English MS MARCO reranker does not transfer to an Indonesian corpus full of identifiers. A margin-gated variant
+(skip when the top-1 cosine leads by 0.02 or more) landed at 0.667, inside noise. The script ships so the next
+person reruns it instead of redoing it.
 
 ## MCP tools
 
