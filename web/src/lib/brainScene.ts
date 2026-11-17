@@ -148,6 +148,50 @@ function rgba(hex: string, a: number): string {
   return `rgba(${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255}, ${a})`;
 }
 
+function hashText(s: string): number {
+  let h = 2166136261;
+  for (let i = 0; i < s.length; i++) {
+    h ^= s.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return ((h >>> 0) % 1000) / 1000;
+}
+
+/** Nudge a hex colour's hue and lightness so the projects inside one branch read as siblings, not copies. */
+function tint(hex: string, t: number): string {
+  const m = /^#?([0-9a-f]{6})$/i.exec(hex.trim());
+  if (!m) return hex;
+  const n = parseInt(m[1], 16);
+  const r = ((n >> 16) & 255) / 255;
+  const g = ((n >> 8) & 255) / 255;
+  const b = (n & 255) / 255;
+  const max = Math.max(r, g, b);
+  const min = Math.min(r, g, b);
+  const l = (max + min) / 2;
+  let h = 0;
+  let s = 0;
+  if (max !== min) {
+    const d = max - min;
+    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+    h = max === r ? (g - b) / d + (g < b ? 6 : 0) : max === g ? (b - r) / d + 2 : (r - g) / d + 4;
+    h /= 6;
+  }
+  const hh = (h + (t - 0.5) * 0.12 + 1) % 1;
+  const ss = Math.min(1, Math.max(0, s * (0.85 + t * 0.3)));
+  const ll = Math.min(0.82, Math.max(0.18, l * (0.82 + t * 0.36)));
+  const q = ll < 0.5 ? ll * (1 + ss) : ll + ss - ll * ss;
+  const p = 2 * ll - q;
+  const f = (x: number) => {
+    const u = x < 0 ? x + 1 : x > 1 ? x - 1 : x;
+    if (u < 1 / 6) return p + (q - p) * 6 * u;
+    if (u < 1 / 2) return q;
+    if (u < 2 / 3) return p + (q - p) * (2 / 3 - u) * 6;
+    return p;
+  };
+  const to = (x: number) => Math.round(x * 255).toString(16).padStart(2, "0");
+  return `#${to(f(hh + 1 / 3))}${to(f(hh))}${to(f(hh - 1 / 3))}`;
+}
+
 export class BrainScene {
   private ctx: CanvasRenderingContext2D;
   private W = 0;
@@ -172,6 +216,9 @@ export class BrainScene {
   private selected: number | null = null;
   private hovered: number | null = null;
   private highlight: Set<number> | null = null;
+  private showApart = false;
+  private colorBy: "branch" | "cluster" = "branch";
+  private clusterColors = new Map<string, string>();
   private nextAmbient = 0;
   private nextSpark = 0;
   private pointers = new Map<number, { x: number; y: number }>();
@@ -339,6 +386,7 @@ export class BrainScene {
   setPalette(p: Palette) {
     this.palette = p;
     this.sprites.clear();
+    this.clusterColors.clear(); // hues derive from the branch colour, which changes with the theme
   }
 
   setReduced(reduced: boolean) {
@@ -352,6 +400,26 @@ export class BrainScene {
   setSelected(id: number | null, focus = false) {
     this.selected = id;
     if (id != null && focus) this.focusOn(id);
+  }
+
+  /** Cross-project axons are off by default: they are drawn but do not pull, so they only add noise. */
+  setShowApart(on: boolean) {
+    this.showApart = on;
+  }
+
+  /** "cluster" paints one hue per project (siblings of a branch stay family), "branch" keeps one per domain. */
+  setColorBy(mode: "branch" | "cluster") {
+    this.colorBy = mode;
+  }
+
+  private colorOf(n: Neuron): string {
+    if (this.colorBy === "branch") return this.color(n.branch);
+    let c = this.clusterColors.get(n.cluster);
+    if (!c) {
+      c = tint(this.color(n.branch), hashText(n.cluster));
+      this.clusterColors.set(n.cluster, c);
+    }
+    return c;
   }
 
   neighbours(id: number): { node: Neuron; axon: Axon }[] {
@@ -744,6 +812,8 @@ export class BrainScene {
       const t = a.target;
       const grow = Math.min(this.growth(s, now), this.growth(t, now));
       if (grow <= 0) continue;
+      const hub = focus?.hub ?? null;
+      if (a.apart && !this.showApart && !(hub && (a.source === hub || a.target === hub))) continue;
       let alpha = (pal.dark ? 0.1 + a.w * 0.2 : 0.13 + a.w * 0.22) * (a.kind === "together" ? 0.85 : 1);
       if (focus) {
         const on = focus.hub ? (a.source === focus.hub || a.target === focus.hub) : focus.nodes.has(s.id) && focus.nodes.has(t.id);
@@ -755,11 +825,11 @@ export class BrainScene {
       ctx.globalAlpha = alpha * grow;
       if (a.cross) {
         const grad = ctx.createLinearGradient(p0.x, p0.y, p1.x, p1.y);
-        grad.addColorStop(0, this.color(s.branch));
-        grad.addColorStop(1, this.color(t.branch));
+        grad.addColorStop(0, this.colorOf(s));
+        grad.addColorStop(1, this.colorOf(t));
         ctx.strokeStyle = grad;
       } else {
-        ctx.strokeStyle = this.color(s.branch);
+        ctx.strokeStyle = this.colorOf(s);
       }
       ctx.lineWidth = Math.max(0.6, Math.min(2, (a.kind === "explicit" ? 1.4 : 0.9) * Math.sqrt(k)));
       ctx.setLineDash(a.kind === "together" ? [1.5, 3.5] : []);
@@ -783,6 +853,7 @@ export class BrainScene {
         continue;
       }
       alive.push(p);
+      if (p.axon.apart && !this.showApart) continue;
       if (u < 0) continue;
       const a = p.axon;
       const p0 = this.toScreen(a.source);
@@ -814,7 +885,7 @@ export class BrainScene {
       const r = Math.max(1.4, n.r * k) * scale * (1 + breathe + ex * 0.7);
       const p = this.toScreen(n);
       const base = n.data.kind === "core" ? 0.42 : 0.2;
-      const color = ex > 0.04 ? n.exciteColor : this.color(n.branch);
+      const color = ex > 0.04 ? n.exciteColor : this.colorOf(n);
       const g = r * (3 + ex * 3.5);
       ctx.globalAlpha = Math.min(1, (base + ex * 0.8) * alphaOf(n) * glow * ghost);
       ctx.drawImage(this.sprite(color), p.x - g, p.y - g, g * 2, g * 2);
@@ -829,7 +900,7 @@ export class BrainScene {
       const scale = (this.reduced ? 1 : easeOutBack(grow)) * ghost;
       const r = Math.max(1.4, n.r * k) * scale * (1 + breathe + ex * 0.7);
       const p = this.toScreen(n);
-      const color = this.color(n.branch);
+      const color = this.colorOf(n);
       ctx.globalAlpha = alphaOf(n) * ghost;
       ctx.beginPath();
       ctx.arc(p.x, p.y, r, 0, Math.PI * 2);

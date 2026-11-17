@@ -8,6 +8,7 @@ import type { CallEvent } from "../lib/types";
 import { TileHeader } from "./Tile";
 
 const CORE_TITLE = "Core: profile and global notes";
+const ALL_KINDS = ["fact", "episode", "core", "procedure"] as const;
 const LINK_LABEL: Record<LinkKind, string> = { related: "related", together: "together", explicit: "linked" };
 const TONE: Record<string, string> = { recall: "--recall", remember: "--remember", forget: "--forget" };
 
@@ -32,6 +33,9 @@ export function BrainView({ subscribe }: { subscribe: (fn: (e: CallEvent) => voi
   const [branch, setBranch] = useState<string | null>(null);
   const [query, setQuery] = useState("");
   const [zoomed, setZoomed] = useState(false);
+  const [colorBy, setColorBy] = useState<"branch" | "cluster">("branch");
+  const [showApart, setShowApart] = useState(false);
+  const [kinds, setKinds] = useState<Set<string>>(() => new Set<string>(ALL_KINDS));
   const [firings, setFirings] = useState<Firing[]>([]);
   const reduced = useReducedMotion() ?? false;
 
@@ -82,6 +86,8 @@ export function BrainView({ subscribe }: { subscribe: (fn: (e: CallEvent) => voi
   }, []);
 
   useEffect(() => scene.current?.setReduced(reduced), [reduced]);
+  useEffect(() => scene.current?.setShowApart(showApart), [showApart]);
+  useEffect(() => scene.current?.setColorBy(colorBy), [colorBy]);
 
   useEffect(() => {
     if (!graph || !scene.current) return;
@@ -124,10 +130,12 @@ export function BrainView({ subscribe }: { subscribe: (fn: (e: CallEvent) => voi
   const matches = useMemo(() => {
     if (!graph) return null;
     const q = query.trim().toLowerCase();
-    if (!q && !branch) return null;
+    const allKinds = kinds.size === ALL_KINDS.length;
+    if (!q && !branch && allKinds) return null;
     return graph.nodes.filter((n) =>
-      (!branch || branchOf(n) === branch) && (!q || n.text.toLowerCase().includes(q) || n.scope.toLowerCase().includes(q)));
-  }, [graph, query, branch]);
+      (!branch || branchOf(n) === branch) && kinds.has(n.kind) &&
+      (!q || n.text.toLowerCase().includes(q) || n.scope.toLowerCase().includes(q)));
+  }, [graph, query, branch, kinds]);
 
   useEffect(() => scene.current?.setHighlight(matches ? new Set(matches.map((n) => n.id)) : null), [matches]);
   useEffect(() => scene.current?.setSelected(selected), [selected]);
@@ -137,6 +145,15 @@ export function BrainView({ subscribe }: { subscribe: (fn: (e: CallEvent) => voi
     scene.current?.setSelected(id, true);
     const n = graphRef.current?.nodes.find((x) => x.id === id);
     if (n) scene.current?.fire([id], readPalette().branch[branchOf(n)] || readPalette().fallback);
+  }, []);
+
+  const toggleKind = useCallback((kind: string) => {
+    setKinds((prev) => {
+      const next = new Set(prev);
+      if (next.has(kind)) next.delete(kind);
+      else next.add(kind);
+      return next;
+    });
   }, []);
 
   const stats = useMemo(() => {
@@ -161,6 +178,20 @@ export function BrainView({ subscribe }: { subscribe: (fn: (e: CallEvent) => voi
           label="Neurons"
           meta={graph && stats ? `${fmtInt(graph.nodes.length)} memories · ${fmtInt(graph.links.length)} links · ${stats.cross} across branches` : "loading"}
         />
+        <div className="flex flex-wrap items-center gap-1.5 px-2 pt-3 sm:px-4">
+          <Chip on={colorBy === "cluster"} onClick={() => setColorBy(colorBy === "cluster" ? "branch" : "cluster")}>
+            warna per project
+          </Chip>
+          <Chip on={showApart} onClick={() => setShowApart((v) => !v)}>
+            link antar-project
+          </Chip>
+          <span className="mx-1 h-3 w-px bg-line-strong" aria-hidden />
+          {ALL_KINDS.map((k) => (
+            <Chip key={k} on={kinds.has(k)} onClick={() => toggleKind(k)}>
+              {k}
+            </Chip>
+          ))}
+        </div>
         <div className="relative mx-2 mb-2 mt-3 sm:mx-4">
           <div
             ref={wrap}
@@ -243,6 +274,19 @@ export function BrainView({ subscribe }: { subscribe: (fn: (e: CallEvent) => voi
 
 function toneColor(action: string) {
   return getComputedStyle(document.documentElement).getPropertyValue(TONE[action] ?? "--recall").trim();
+}
+
+function Chip({ on, onClick, children }: { on: boolean; onClick: () => void; children: ReactNode }) {
+  return (
+    <button
+      type="button"
+      aria-pressed={on}
+      onClick={onClick}
+      className={`border px-2 py-1 font-mono text-[10px] uppercase tracking-[0.12em] outline-none transition-colors ${on ? "border-ink-3 bg-surface-2 text-ink" : "border-line text-ink-3 hover:border-ink-3 hover:text-ink-2"}`}
+    >
+      {children}
+    </button>
+  );
 }
 
 function ZoomButton({ label, onClick, children, wide = false }: { label: string; onClick: () => void; children: ReactNode; wide?: boolean }) {
